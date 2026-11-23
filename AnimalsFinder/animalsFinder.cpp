@@ -59,16 +59,24 @@ AnimalsFinder& AnimalsFinder::update()
 		float dist = MISC::GET_DISTANCE_BETWEEN_COORDS(plv.x, plv.y, plv.z, animCords.x, animCords.y, animCords.z, FALSE);
 
 		if (this->blips.find(peds[i]) != this->blips.end()) {
-			MAP::SET_BLIP_COORDS(this->blips[peds[i]], animCords.x, animCords.y, animCords.z);
-			currentBlips[peds[i]] = this->blips[peds[i]];
-			continue;
+			// The quality can change after the blip was made (other mods set it): make the blip again so its colour follows.
+			if (PED::_GET_PED_QUALITY(peds[i]) != this->qualities[peds[i]]) {
+				MAP::REMOVE_BLIP(&this->blips[peds[i]]);
+				this->blips.erase(peds[i]);
+			}
+			else {
+				MAP::SET_BLIP_COORDS(this->blips[peds[i]], animCords.x, animCords.y, animCords.z);
+				currentBlips[peds[i]] = this->blips[peds[i]];
+				continue;
+			}
 		}
 
 		Blip animalBlip = MAP::BLIP_ADD_FOR_ENTITY((Hash)1664425300, peds[i]);
 		this->blips[peds[i]] = animalBlip;
 		currentBlips[peds[i]] = animalBlip;
 
-		switch (PED::_GET_PED_QUALITY(peds[i])) {
+		this->qualities[peds[i]] = PED::_GET_PED_QUALITY(peds[i]);
+		switch (this->qualities[peds[i]]) {
 		case ePedQuality::PQ_INVALID:
 		case ePedQuality::PQ_LOW:
 			this->removeOrModifyBlip(this->iniOptions.getShowPoorQuality(), &animalBlip, (Hash)0xA2814CC7);
@@ -89,6 +97,7 @@ AnimalsFinder& AnimalsFinder::update()
 	for (auto& pair : this->blips) {
 		if (currentBlips.find(pair.first) == currentBlips.end()) {
 			MAP::REMOVE_BLIP(&this->blips[pair.first]);
+			this->qualities.erase(pair.first);
 			this->blips.erase(pair.first);
 		}
 	}
