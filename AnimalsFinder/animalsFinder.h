@@ -15,6 +15,7 @@ class AnimalsFinder
 {
 protected:
 	std::map<Ped, Blip> blips;
+	std::map<Ped, int> qualities;
 	std::map<Hash, std::string> animalsNames;
 	IniOptions iniOptions{};
 	AnimalsFinder& removeOrModifyBlip(bool showQuality, Blip* animalBlip, Hash hash);
